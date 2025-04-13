@@ -7,6 +7,7 @@ from .utils import send_email
 
 class AddToWaitingListAPIView(APIView):
     def post(self, request):
+
         email = request.data.get('email')
         language = request.data.get('language')
         if WaitingUser.objects.filter(email=email).exists():
@@ -16,6 +17,7 @@ class AddToWaitingListAPIView(APIView):
         waiting_user = WaitingUser.objects.create(email=email, language=language)
 
         serializer = WaitingUserSerializer(waiting_user)
+        send_email(email_address=email, reason="waiting list", language=language)
 
         return Response({"message": "User added to waiting list.", "user": serializer.data},
                         status=status.HTTP_201_CREATED)
@@ -31,6 +33,6 @@ class PDFDownloadUsersAPIView(APIView):
         Pdfdownloader = PDFDownloadUser.objects.create(email=email, language=language)
 
         serializer = PDFDownloadUserSerializer(Pdfdownloader)
-        send_email(email)
+        send_email(email_address=email, reason="PDF Download", language=language)
         return Response({"message": "PDF was sent successfully.", "user": serializer.data},
                         status=status.HTTP_201_CREATED)

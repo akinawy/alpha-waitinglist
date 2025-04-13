@@ -1,3 +1,4 @@
 from django.contrib import admin
-
-# Register your models here.
+from .models import WaitingUser, PDFDownloadUser
+admin.site.register(WaitingUser)
+admin.site.register(PDFDownloadUser)
