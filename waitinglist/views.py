@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from .models import WaitingUser, PDFDownloadUser
+from .models import WaitingUser, PDFDownloadUser, TookAssessment
 from .serializers import WaitingUserSerializer, PDFDownloadUserSerializer
 from .utils import send_email
 import json
@@ -48,13 +48,17 @@ def Webhook_handler(request):
 
         email = None
         for answer in payload.get('form_response', {}).get('answers', []):
-            if answer.get('field', {}).get('ref') == '082ff8a9-f5ed-4faa-a58e-a8703e834f73':  # email field ref
+            if answer.get('field', {}).get('ref') == 'email_ref':  # email field ref
                 email = answer.get('text')
+            if answer.get('field', {}).get('ref') == 'comment_ref':
+                comment = answer.get('text')
+
         score = payload.get('form_response', {}).get('calculated', [])
         language = "EN" if payload.get('form_response', {}).get('form_id', []) == "W8HgAXB9" else "AR"
+
         if score and email:
             send_email(email_address=email, reason="send score", language=language, score=score)
-
+        TookAssessment.objects.create(email=email, score=score, comment=comment, language=language)
         return Response({"status": "success", "message": "Data received"}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response(
