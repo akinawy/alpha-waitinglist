@@ -1,9 +1,12 @@
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
 from .models import WaitingUser, PDFDownloadUser
 from .serializers import WaitingUserSerializer, PDFDownloadUserSerializer
 from .utils import send_email
+import json
 
 class AddToWaitingListAPIView(APIView):
     def post(self, request):
@@ -36,3 +39,25 @@ class PDFDownloadUsersAPIView(APIView):
         send_email(email_address=email, reason="PDF Download", language=language)
         return Response({"message": "PDF was sent successfully.", "user": serializer.data},
                         status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def Webhook_handler(request):
+    try:
+        payload = json.loads(request.body)
+
+        email = None
+        for answer in payload.get('form_response', {}).get('answers', []):
+            if answer.get('field', {}).get('ref') == '082ff8a9-f5ed-4faa-a58e-a8703e834f73':  # email field ref
+                email = answer.get('text')
+        score = payload.get('form_response', {}).get('calculated', [])
+        language = "EN" if payload.get('form_response', {}).get('form_id', []) == "W8HgAXB9" else "AR"
+        if score and email:
+            send_email(email_address=email, reason="send score", language=language, score=score)
+
+        return Response({"status": "success", "message": "Data received"}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {"status": "error", "message": str(e)},
+            status=status.HTTP_400_BAD_REQUEST
+        )
