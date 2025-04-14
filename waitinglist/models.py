@@ -24,7 +24,10 @@ class PDFDownloadUser(models.Model):
         return self.email
 
 class TookAssessment(models.Model):
-
+    LANGUAGE_CHOICES = [
+        ('EN', 'English'),
+        ('AR', 'Arabic'),
+    ]
     email = models.EmailField(unique=True)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     comment = models.CharField(max_length=255, blank=True, null=True)
