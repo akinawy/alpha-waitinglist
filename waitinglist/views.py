@@ -47,6 +47,7 @@ def Webhook_handler(request):
         payload = json.loads(request.body)
 
         email = None
+        comment = None
         for answer in payload.get('form_response', {}).get('answers', []):
             if answer.get('field', {}).get('ref') == 'email_ref':  # email field ref
                 email = answer.get('text')
