@@ -28,7 +28,7 @@ class TookAssessment(models.Model):
         ('EN', 'English'),
         ('AR', 'Arabic'),
     ]
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=False)
     language = models.CharField(max_length=2, choices=LANGUAGE_CHOICES)
     comment = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
